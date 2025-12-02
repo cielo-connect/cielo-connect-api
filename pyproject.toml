@@ -14,8 +14,3 @@ classifiers = [
 
 [tool.setuptools.packages.find]
 where = ["cieloconnectapi"]
-
-[project.urls]
-Homepage = "https://github.com/cielo-connect/cielo-connect-api"
-Repository = "https://github.com/cielo-connect/cielo-connect-api"
-Changelog = "https://github.com/cielo-connect/cielo-connect-api/releases"
