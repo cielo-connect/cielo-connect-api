@@ -14,7 +14,7 @@ from .const import *
 from .exceptions import AuthenticationError, CieloError
 from .model import CieloData, CieloDevice
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 BASE_URL = "https://api.smartcielo.com/openapi/v1"
 DEFAULT_TIMEOUT = 5 * 60  # 5 minutes
