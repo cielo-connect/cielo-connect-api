@@ -1,0 +1,21 @@
+[project]
+name = "cielo-connect-api"
+version = "0.1.0"
+description = "Python package for Cielo Connect APIs."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Cielo Wigle Inc." }, { name = "Muhammad Ihsan" }]
+requires-python = ">=3.8"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+
+[tool.setuptools.packages.find]
+where = ["cieloconnectapi"]
+
+[project.urls]
+Homepage = "https://github.com/cielo-connect/cielo-connect-api"
+Repository = "https://github.com/cielo-connect/cielo-connect-api"
+Changelog = "https://github.com/cielo-connect/cielo-connect-api/releases"
