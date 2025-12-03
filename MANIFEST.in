@@ -1,0 +1,3 @@
+include cieloconnectapi/*
+include README.md
+include LICENSE

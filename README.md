@@ -1,6 +1,6 @@
-# Cielo Connect API — Async Python Client
+# Cielo Connect API
 
-**Async Python API client for the Cielo Home platform.**
+**Async Python API client for the Cielo Home devices.**
 
 This library provides an asynchronous interface to the **Cielo Connect Cloud API**, enabling you to control and monitor Cielo Smart Thermostats and Cielo Breez devices from Python.
 
