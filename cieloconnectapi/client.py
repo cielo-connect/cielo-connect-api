@@ -14,8 +14,7 @@ from .const import *
 from .exceptions import AuthenticationError, CieloError
 from .model import CieloData, CieloDevice
 
-__version__ = "1.0.0"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 BASE_URL = "https://api.smartcielo.com/openapi/v1"
 DEFAULT_TIMEOUT = 5 * 60  # 5 minutes
@@ -319,7 +318,7 @@ class CieloClient:
         return await self._request("POST", url, **kwargs)
 
     #### HELPERS ####
-    def _mode_caps(self) -> dict:
+    def mode_caps(self) -> dict:
         """Return vendor caps for the current vendor mode string."""
         if self.device_data is None:
             return {}
@@ -329,8 +328,8 @@ class CieloClient:
             mode_key, {}
         ) or {}
 
-    def _mode_supports_temperature(self) -> bool:
-        caps = self._mode_caps()
+    def mode_supports_temperature(self) -> bool:
+        caps = self.mode_caps()
         if "rules" in caps and caps["rules"].split(":")[0] == "vanish":
             return False
         temps = (caps.get("temperatures") or {}).get(self.device_data.temp_unit, {})
@@ -338,12 +337,12 @@ class CieloClient:
         # Consider it supported only if there are actual selectable values.
         return len(values) > 0
 
-    def _current_mode_temp_values(self) -> list[int]:
-        caps = self._mode_caps()
+    def current_mode_temp_values(self) -> list[int]:
+        caps = self.mode_caps()
         temps = (caps.get("temperatures") or {}).get(self.device_data.temp_unit, {})
         return list(temps.get("values") or [])
 
-    def _find_valid_target_temp(self, target: float, valid: list[int]) -> int:
+    def find_valid_target_temp(self, target: float, valid: list[int]) -> int:
         if not valid:
             return int(round(float(target)))
         target = int(round(float(target)))
@@ -354,7 +353,7 @@ class CieloClient:
 
         return valid[bisect_left(valid, target)]
 
-    def _supports_half_step(self, ha_unit="°C") -> bool:
+    def supports_half_step(self, ha_unit="°C") -> bool:
         """Return True if we should use 0.5°C resolution."""
         if not getattr(self.device_data, "is_thermostat", False):
             return False
@@ -363,7 +362,7 @@ class CieloClient:
 
         return ha_unit == UnitOfTemperature.CELSIUS
 
-    def _round_to_half(self, value: float) -> float:
+    def round_to_half(self, value: float) -> float:
         return round(value * 2) / 2.0
 
     def available(self) -> bool:
@@ -372,7 +371,7 @@ class CieloClient:
         return bool(self.device_data.device_status)
 
     def current_mode_fan_speed(self) -> list[str] | None:
-        caps = self._mode_caps()
+        caps = self.mode_caps()
         modes = caps.get("fan_levels") or []
         # your API sometimes wraps this in nested arrays; normalize to flat list
         if modes and isinstance(modes[0], list):
@@ -400,14 +399,14 @@ class CieloClient:
         return cur
 
     def fan_modes(self) -> list[str] | None:
-        caps = self._mode_caps()
+        caps = self.mode_caps()
         modes = caps.get("fan_levels") or []
         if modes and isinstance(modes[0], list):
             modes = modes[0]
         return list(modes) or []
 
     def swing_modes(self) -> list[str] | None:
-        caps = self._mode_caps()
+        caps = self.mode_caps()
         modes = caps.get("swing") or []
         if modes and isinstance(modes[0], list):
             modes = modes[0]
@@ -458,7 +457,7 @@ class CieloClient:
 
     def precision(self, ha_unit) -> float:
         """Return the precision of the thermostat."""
-        if self._supports_half_step(ha_unit):
+        if self.supports_half_step(ha_unit):
             return 0.5
         return 1.0
 
@@ -477,7 +476,7 @@ class CieloClient:
 
     def target_temperature_step(self, ha_unit) -> float | None:
         # Thermostats in Celsius: allow 0.5 steps
-        if self._supports_half_step(ha_unit):
+        if self.supports_half_step(ha_unit):
             return 0.5
 
         # Non-thermostat or non-Celsius: keep 1 degree
@@ -485,7 +484,7 @@ class CieloClient:
 
     def target_temperature(self) -> float | None:
         # Only expose a target temp if supported right now
-        if not self._mode_supports_temperature():
+        if not self.mode_supports_temperature():
             return None
         t = self.device_data.target_temp
         return float(t) if t is not None else None
@@ -494,27 +493,27 @@ class CieloClient:
         val = self.device_data.target_heat_set_point
         if val is None:
             return None
-        if self._supports_half_step(ha_unit):
-            return self._round_to_half(float(val))
+        if self.supports_half_step(ha_unit):
+            return self.round_to_half(float(val))
         return int(float(val))
 
     def target_temperature_high(self, ha_unit):
         val = self.device_data.target_cool_set_point
         if val is None:
             return None
-        if self._supports_half_step(ha_unit):
-            return self._round_to_half(float(val))
+        if self.supports_half_step(ha_unit):
+            return self.round_to_half(float(val))
         return int(float(val))
 
     def min_temp(self) -> float:
-        values = self._current_mode_temp_values()
+        values = self.current_mode_temp_values()
         if values:
             return float(values[0])
         # Fallback if mode has no temps (won’t be shown anyway)
         return float(self.device_data.target_temp or 0)
 
     def max_temp(self) -> float:
-        values = self._current_mode_temp_values()
+        values = self.current_mode_temp_values()
         if values:
             return float(values[-1])
         return float(self.device_data.target_temp or 0)
@@ -561,9 +560,9 @@ class CieloClient:
                 return None
 
             # Thermostat in Celsius: accept 0.5 steps
-            if self._supports_half_step(ha_unit):
+            if self.supports_half_step(ha_unit):
                 if heat_temp is not None:
-                    new_heat = self._round_to_half(float(heat_temp))
+                    new_heat = self.round_to_half(float(heat_temp))
                     if float(new_heat) != float(self.device_data.target_heat_set_point):
                         response = await self.async_send_api_call(
                             action_type="heat_set_point",
@@ -571,7 +570,7 @@ class CieloClient:
                         )
 
                 if cool_temp is not None:
-                    new_cool = self._round_to_half(float(cool_temp))
+                    new_cool = self.round_to_half(float(cool_temp))
                     if float(new_cool) != float(self.device_data.target_cool_set_point):
                         response = await self.async_send_api_call(
                             action_type="cool_set_point",
@@ -580,12 +579,12 @@ class CieloClient:
                 return response
 
             # Non-thermostat or non-Celsius: keep current integer snapping
-            valid = self._current_mode_temp_values()
+            valid = self.current_mode_temp_values()
             if not valid:
                 return None  # nothing to do
 
-            heat_temp = self._find_valid_target_temp(heat_temp, valid)
-            cool_temp = self._find_valid_target_temp(cool_temp, valid)
+            heat_temp = self.find_valid_target_temp(heat_temp, valid)
+            cool_temp = self.find_valid_target_temp(cool_temp, valid)
 
             if float(heat_temp) != float(self.device_data.target_heat_set_point):
                 response = await self.async_send_api_call(
@@ -606,12 +605,12 @@ class CieloClient:
         ):
             return None
 
-        if not self._mode_supports_temperature():
+        if not self.mode_supports_temperature():
             return None
 
         # Thermostat in Celsius: 0.5°C steps
-        if self._supports_half_step(ha_unit):
-            new_t = self._round_to_half(float(t))
+        if self.supports_half_step(ha_unit):
+            new_t = self.round_to_half(float(t))
             if float(new_t) == float(self.device_data.target_temp or 0):
                 return None
             self.device_data.ac_states["set_point"] = new_t
@@ -621,11 +620,11 @@ class CieloClient:
             return response
 
         # Non-thermostat or non-Celsius: snap to supported integer values
-        valid = self._current_mode_temp_values()
+        valid = self.current_mode_temp_values()
         if not valid:
             return None  # nothing to do
 
-        new_t = self._find_valid_target_temp(t, valid)
+        new_t = self.find_valid_target_temp(t, valid)
         self.device_data.ac_states["set_point"] = int(new_t)
         response = await self.async_send_api_call(
             action_type="set_point", action_value=int(new_t)
@@ -671,7 +670,7 @@ class CieloClient:
             self.device_data.ac_states["power"] = "on"
 
         if not getattr(self.device_data, "is_thermostat", False):
-            values = self._current_mode_temp_values()
+            values = self.current_mode_temp_values()
             self.device_data.temp_list = values
 
             if (
@@ -748,7 +747,7 @@ class CieloClient:
         # keep hvac_mode and fan_speed valid for the (possibly) new mode ---
         new_mode = self.device_data.ac_states.get("mode")
         if new_mode and new_mode != self.device_data.hvac_mode:
-            # Update the top-level hvac_mode used by _mode_caps()
+            # Update the top-level hvac_mode used by mode_caps()
             self.device_data.hvac_mode = new_mode
 
         # Now fix fan_speed for this mode
