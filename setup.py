@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cielo-connect-api",
-    version="1.0.2",
+    version="1.0.3",
     description="Python package for Cielo Connect APIs.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

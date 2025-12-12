@@ -48,3 +48,30 @@ class CieloDevice:
     temp_unit: str | None
     temp_step: int | None
     supported_features: dict[str, str] | None
+
+    def apply_update(self, data: Mapping[str, Any]) -> None:
+        """Apply an API response payload to update device state attributes."""
+
+        self.ac_states.update(data)
+
+        if (temp := data.get("set_point")) is not None:
+            self.target_temp = float(temp)
+        if (mode := data.get("mode")) is not None:
+            self.hvac_mode = mode
+        if (fan_mode := data.get("fan_speed")) is not None:
+            self.fan_mode = fan_mode
+        if (preset := data.get("preset")) is not None:
+            self.preset_mode = preset
+        if (swing_mode := data.get("swing_position")) is not None:
+            self.swing_mode = swing_mode
+
+        device_power = data.get("power")
+        if device_power is not None:
+            self.device_on = device_power.lower() == "on"
+            if not self.device_on and self.hvac_mode != "off":
+                self.hvac_mode = "off"
+
+        if (heat_temp := data.get("heat_set_point")) is not None:
+            self.target_heat_set_point = float(heat_temp)
+        if (cool_temp := data.get("cool_set_point")) is not None:
+            self.target_cool_set_point = float(cool_temp)
