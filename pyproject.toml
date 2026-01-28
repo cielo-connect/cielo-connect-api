@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cielo-connect-api"
+version = "1.0.4"
+dependencies = [
+  "aiohttp>=3.8.0",
+]
+requires-python = ">=3.8"
+authors = [
+  { name = "Cielo Wigle Inc." },
+  { name = "Muhammad Ihsan" }
+]
+maintainers = [
+  {name = "Cielo Wigle Inc."}
+]
+description = "Python package for Cielo Connect APIs."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/cielo-connect/cielo-connect-api"
+Repository = "https://github.com/cielo-connect/cielo-connect-api.git"
+Issues = "https://github.com/cielo-connect/cielo-connect-api/issues"
