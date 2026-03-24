@@ -14,7 +14,7 @@ from .const import *
 from .exceptions import AuthenticationError, CieloError
 from .model import CieloData, CieloDevice
 
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 
 BASE_URL = "https://api.smartcielo.com/openapi/v1"
 DEFAULT_TIMEOUT = 5 * 60  # 5 minutes
@@ -42,7 +42,7 @@ class CieloClient:
     ) -> None:
         self.api_key = api_key
         self.token = token
-        self.username = api_key
+        self.user_id = api_key
         self.device_data = None
         self.cached_supported_features = {}
         self._owned_session = session is None
@@ -90,7 +90,7 @@ class CieloClient:
         )
         try:
             self.token = result["data"]["access_token"]
-            self.username = result["data"].get("username", self.api_key)
+            self.user_id = result["data"].get("user_id", self.api_key)
         except (KeyError, TypeError) as exc:
             raise AuthenticationError("Invalid authentication response format") from exc
         _LOGGER.debug("Authentication succeeded")
